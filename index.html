@@ -3,14 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Receipt Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5a6fd8;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .gallery-section {
+            padding: 30px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .gallery-title {
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .receipt-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .receipt-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .receipt-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+
+        .receipt-content {
+            padding: 20px;
+        }
+
+        .receipt-caption {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .receipt-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .no-receipts {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to my homepage</h1>
-    <form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="file" id="image" name="image">
-    <input type="submit">
-    <button type="submit">Upload</button>
-    </form>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Receipt Scanner</h1>
+            <p>Upload, view, and manage your receipts with ease</p>
+        </div>
+
+        <div class="upload-section">
+            <form id="uploadForm" class="upload-form">
+                <div class="form-group">
+                    <label for="image">Select Receipt Image:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="image" name="image" accept="image/*" class="file-input" required>
+                        <label for="image" class="file-input-label">📁 Choose File</label>
+                    </div>
+                    <div id="fileInfo" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="caption">Receipt Description:</label>
+                    <input type="text" id="caption" name="caption" placeholder="e.g., Grocery store receipt from Walmart" required>
+                </div>
+
+                <button type="submit" class="upload-btn" id="uploadBtn">
+                    📤 Upload Receipt
+                </button>
+            </form>
+
+            <div id="message"></div>
+        </div>
+
+        <div class="gallery-section">
+            <div class="gallery-header">
+                <h2 class="gallery-title">📋 Your Receipts</h2>
+                <button class="refresh-btn" onclick="loadReceipts()">🔄 Refresh</button>
+            </div>
+
+            <div id="gallery" class="gallery">
+                <div class="loading">Loading receipts...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File input handling
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const fileInfo = document.getElementById('fileInfo');
+            if (file) {
+                fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            } else {
+                fileInfo.textContent = '';
+            }
+        });
+
+        // Upload form handling
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const uploadBtn = document.getElementById('uploadBtn');
+            const messageDiv = document.getElementById('message');
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '📤 Uploading...';
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage('✅ Receipt uploaded successfully!', 'success');
+                    this.reset();
+                    document.getElementById('fileInfo').textContent = '';
+                    loadReceipts(); // Refresh the gallery
+                } else {
+                    const error = await response.text();
+                    showMessage(`❌ Upload failed: ${error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Upload failed: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '📤 Upload Receipt';
+            }
+        });
+
+        // Load receipts
+        async function loadReceipts() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '<div class="loading">Loading receipts...</div>';
+            
+            try {
+                const response = await fetch('/posts');
+                const posts = await response.json();
+                
+                if (posts.length === 0) {
+                    gallery.innerHTML = '<div class="no-receipts">No receipts found. Upload your first receipt above!</div>';
+                    return;
+                }
+                
+                gallery.innerHTML = '';
+                posts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'receipt-card';
+                    
+                    const date = new Date(post.createdAt).toLocaleDateString();
+                    
+                    card.innerHTML = `
+                        <img src="${post.imageUrl}" alt="Receipt" class="receipt-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+                        <div class="receipt-content">
+                            <div class="receipt-caption">${post.caption || 'No description'}</div>
+                            <div class="receipt-date">📅 ${date}</div>
+                            <div class="receipt-actions">
+                                <button class="delete-btn" onclick="deleteReceipt(${post.id})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    gallery.appendChild(card);
+                });
+            } catch (error) {
+                gallery.innerHTML = `<div class="error">❌ Failed to load receipts: ${error.message}</div>`;
+            }
+        }
+
+        // Delete receipt
+        async function deleteReceipt(id) {
+            if (!confirm('Are you sure you want to delete this receipt?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/delete/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('✅ Receipt deleted successfully!', 'success');
+                    loadReceipts(); // Refresh the gallery
+                } else {
+                    const error = await response.text();
+                    showMessage(`❌ Delete failed: ${error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Delete failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = text;
+            
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = '';
+            }, 5000);
+        }
+
+        // Load receipts on page load
+        loadReceipts();
+    </script>
 </body>
 </html>
